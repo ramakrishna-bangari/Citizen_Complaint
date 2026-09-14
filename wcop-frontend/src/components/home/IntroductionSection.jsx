@@ -12,8 +12,6 @@ function IntroductionSection() {
     return (
         <section className="overflow-hidden bg-slate-50">
 
-            {/* Local fade-in animation, scoped to this section only */}
-
             <style>
                 {`
                     @keyframes ccmsFadeInUp {
@@ -42,16 +40,17 @@ function IntroductionSection() {
                 className="
                     mx-auto
                     grid
-                    min-h-[calc(100vh-4rem)]
                     w-full
                     max-w-[1600px]
-                    items-center
+                    items-start
                     gap-10
                     px-3
                     py-14
                     sm:px-4
                     sm:py-16
+                    lg:min-h-[calc(100vh-4rem)]
                     lg:grid-cols-2
+                    lg:items-center
                     lg:gap-14
                     lg:px-6
                     lg:py-20
