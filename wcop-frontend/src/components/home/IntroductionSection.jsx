@@ -36,26 +36,10 @@ function IntroductionSection() {
                 `}
             </style>
 
-            <div
-                className="
-                    mx-auto
-                    grid
-                    w-full
-                    max-w-[1600px]
-                    items-start
-                    gap-10
-                    px-3
-                    py-14
-                    sm:px-4
-                    sm:py-16
-                    lg:min-h-[calc(100vh-4rem)]
-                    lg:grid-cols-2
-                    lg:items-center
-                    lg:gap-14
-                    lg:px-6
-                    lg:py-20
-                    xl:px-8
-                "
+            <div className=" mx-auto grid   w-full
+                  max-w-[1600px] items-start gap-8 px-4 py-10
+                 sm:gap-10  sm:px-6 sm:py-14
+                 lg:min-h-[calc(100vh-4rem)] lg:grid-cols-2 lg:items-center lg:gap-14 lg:px-6 lg:py-20 xl:px-8 "
             >
 
                 {/* Left Content */}
@@ -232,21 +216,9 @@ function IntroductionSection() {
 
                 {/* Right Complaint Preview */}
 
-                <div className="w-full ccms-fade-in-delay-1">
+                <div className="w-full pt-0 ccms-fade-in-delay-1 lg:pt-0">
 
-                    <div
-                        className="
-                            ml-auto
-                            w-full
-                            max-w-2xl
-                            rounded-3xl
-                            border
-                            border-slate-200
-                            bg-white
-                            p-5
-                            shadow-[0_20px_60px_rgba(15,23,42,0.08)]
-                            sm:p-6
-                        "
+                    <div className=" ml-auto w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] sm:p-6 "
                     >
 
                         {/* Header */}

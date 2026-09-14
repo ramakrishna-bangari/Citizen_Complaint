@@ -164,7 +164,7 @@ public class AuthController {
 
     private void deleteCookie(HttpServletResponse response, String name) {
 
-        ResponseCookie cookie = ResponseCookie.from(name, "").httpOnly(true).secure(false).sameSite("Lax").path("/").maxAge(Duration.ZERO).build();
+        ResponseCookie cookie = ResponseCookie.from(name, "").httpOnly(true).secure(true).sameSite("None").path("/").maxAge(Duration.ZERO).build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }

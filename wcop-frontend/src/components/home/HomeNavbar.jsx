@@ -402,7 +402,7 @@ function HomeNavbar({
                                 text-slate-700
                                 transition
                                 hover:bg-slate-100
-                                sm:block
+                                sm:px-3
                             "
                         >
                             Sign In
