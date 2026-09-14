@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: wcop-backend
+
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioSpeechAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiImageAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiModerationAutoConfiguration
+
+  datasource:
+    url: ${DATABASE_URL:NOT_FOUND}
+    username: ${DATABASE_USERNAME:NOT_FOUND}
+    password: ${DATABASE_PASSWORD:NOT_FOUND}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY}
+        chat:
+          options:
+            model: gemini-3.5-flash-lite
+
+app:
+  admin:
+    email: ${ADMIN_EMAIL}
+    password: ${ADMIN_PASSWORD}
+    first-name: ${ADMIN_FIRSTNAME}
+    last-name: ${ADMIN_LASTNAME}
+    phone: ${ADMIN_PHONE}
+    address: ${ADMIN_ADDRESS}
+
+twofactor:
+  api-key: ${API_KEY}
+  otp-template: CITIZEN_OTP
+
+server:
+  port: ${PORT:8080}
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
