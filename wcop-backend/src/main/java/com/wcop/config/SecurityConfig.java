@@ -100,9 +100,6 @@ public class SecurityConfig {
     }
 
 
-    // =========================================================
-    // CORS CONFIGURATION
-    // =========================================================
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -110,7 +107,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // React
-        configuration.setAllowedOrigins(List.of("https://citizen-complaints.vercel.app/"));
+        configuration.setAllowedOrigins(List.of("https://citizen-complaints.vercel.app"));
 
         // HTTP methods
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
@@ -132,9 +129,7 @@ public class SecurityConfig {
     }
 
 
-    // =========================================================
     // PASSWORD ENCODER
-    // =========================================================
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -143,9 +138,7 @@ public class SecurityConfig {
     }
 
 
-    // =========================================================
     // AUTHENTICATION MANAGER
-    // =========================================================
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {

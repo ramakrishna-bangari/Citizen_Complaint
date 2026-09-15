@@ -147,13 +147,11 @@ public class AuthController {
     }
 
 
-    // ADD AUTH COOKIES
-
     private void addAuthCookies(HttpServletResponse response, String accessToken, String refreshToken) {
 
-        ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken).httpOnly(true).secure(false).sameSite("Lax").path("/").maxAge(Duration.ofMinutes(15)).build();
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken).httpOnly(true).secure(true).sameSite("None").path("/").maxAge(Duration.ofMinutes(15)).build();
 
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true).secure(false).sameSite("Lax").path("/").maxAge(Duration.ofDays(7)).build();
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true).secure(true).sameSite("None").path("/").maxAge(Duration.ofDays(7)).build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
 
@@ -168,4 +166,4 @@ public class AuthController {
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
-}
+} 
