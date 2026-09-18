@@ -1,24 +1,28 @@
-import { useCallback, useEffect, useMemo, useState, } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import AuthContext from "./AuthContext";
 
-import { loginUser, logoutUser, refreshToken, registerUser, verifyOtp, } from "../api/authApi";
-
+import {
+    loginUser,
+    logoutUser,
+    refreshToken,
+    registerUser,
+    verifyOtp,
+} from "../api/authApi";
 
 function AuthProvider({ children }) {
-
     const [user, setUser] = useState(null);
-
     const [loading, setLoading] = useState(true);
 
     const extractUser = useCallback((response) => {
-
         if (!response) {
             return null;
         }
+
         if (response.user) {
             return response.user;
         }
+
         if (response.data?.user) {
             return response.data.user;
         }
@@ -30,158 +34,163 @@ function AuthProvider({ children }) {
         ) {
             return response.data;
         }
+
         if (response.id) {
             return response;
         }
-        return null;
 
+        return null;
     }, []);
 
-
     const normalizeUser = useCallback((rawUser) => {
-
         if (!rawUser) {
             return null;
         }
 
-        let role = rawUser.role || rawUser.roleName || rawUser.userRole || null;
+        let role =
+            rawUser.role ||
+            rawUser.roleName ||
+            rawUser.userRole ||
+            null;
 
-        if (typeof role === "object" && role !== null
-        ) {
+        if (typeof role === "object" && role !== null) {
             role = role.roleName || role.name || null;
         }
 
+        role = String(role)
+            .replace(/^ROLE_/i, "")
+            .toUpperCase();
 
-        role = String(role).replace(/^ROLE_/i, "").toUpperCase();
-
-
-        return { ...rawUser, role, };
-
+        return {
+            ...rawUser,
+            role,
+        };
     }, []);
 
+    const updateUser = useCallback(
+        (updatedUser) => {
+            const normalized = normalizeUser(updatedUser);
 
-    const updateUser = useCallback((updatedUser) => {
+            if (!normalized) {
+                return;
+            }
 
-        const normalized = normalizeUser(updatedUser);
-        setUser(normalized);
-    },
-        [normalizeUser],
+            setUser((currentUser) => ({
+                ...(currentUser || {}),
+                ...normalized,
+            }));
+        },
+        [normalizeUser]
     );
 
-
     const initializeAuth = useCallback(async () => {
+        setLoading(true);
 
         try {
-
-
             const response = await refreshToken();
             const rawUser = extractUser(response);
             const authenticatedUser = normalizeUser(rawUser);
 
+            if (!authenticatedUser) {
+                setUser(null);
+                return;
+            }
+
             setUser(authenticatedUser);
-
         } catch {
-
             setUser(null);
-
         } finally {
-
             setLoading(false);
         }
-
-    }, [
-        extractUser,
-        normalizeUser,
-    ]);
-
+    }, [extractUser, normalizeUser]);
 
     useEffect(() => {
         initializeAuth();
-    }, [
-        initializeAuth,
-    ]);
+    }, [initializeAuth]);
 
-    const login = useCallback(async (data) => {
+    const login = useCallback(
+        async (data) => {
+            const response = await loginUser(data);
 
-        const response = await loginUser(data);
+            const rawUser = extractUser(response);
+            const authenticatedUser = normalizeUser(rawUser);
 
-        const rawUser = extractUser(response);
+            if (!authenticatedUser) {
+                throw new Error(
+                    "Login succeeded, but user information was not returned."
+                );
+            }
 
-        const authenticatedUser = normalizeUser(rawUser);
+            setUser(authenticatedUser);
 
-        if (!authenticatedUser) {
+            return authenticatedUser;
+        },
+        [extractUser, normalizeUser]
+    );
 
-            throw new Error("Login succeeded, but user information was not returned.");
-        }
+    const loginWithOtp = useCallback(
+        async (data) => {
+            const response = await verifyOtp(data);
 
-        setUser(authenticatedUser);
-        return authenticatedUser;
+            const rawUser = extractUser(response);
+            const authenticatedUser = normalizeUser(rawUser);
 
-    }, [extractUser, normalizeUser,]);
+            if (!authenticatedUser) {
+                throw new Error(
+                    "OTP verification succeeded, but user information was not returned."
+                );
+            }
 
+            setUser(authenticatedUser);
 
-    const loginWithOtp = useCallback(async (data) => {
-
-        const response = await verifyOtp(data);
-        const rawUser = extractUser(response);
-        const authenticatedUser = normalizeUser(rawUser);
-        if (!authenticatedUser) {
-            throw new Error("OTP verification succeeded, but user information was not returned.");
-        }
-        setUser(authenticatedUser);
-        return authenticatedUser;
-
-    }, [extractUser, normalizeUser,]);
-
-
+            return authenticatedUser;
+        },
+        [extractUser, normalizeUser]
+    );
 
     const register = useCallback(async (data) => {
-
         return await registerUser(data);
-
     }, []);
 
-
     const logout = useCallback(async () => {
-
         try {
             await logoutUser();
         } finally {
             setUser(null);
-
         }
-
     }, []);
 
+    const value = useMemo(
+        () => ({
+            user,
+            loading,
+            isAuthenticated: Boolean(user),
 
+            login,
+            loginWithOtp,
+            register,
+            logout,
+            updateUser,
 
-    const value = useMemo(() => ({
-
-        user,
-        loading,
-        isAuthenticated: Boolean(user),
-
-        login,
-        loginWithOtp,
-        register,
-        logout,
-        updateUser,
-
-        refreshAuth: initializeAuth,
-    }), [user, loading, login, loginWithOtp, register, logout, updateUser, initializeAuth,]);
-
-
-
-    return (
-
-        <AuthContext.Provider value={value}>
-
-            {children}
-
-        </AuthContext.Provider>
-
+            refreshAuth: initializeAuth,
+        }),
+        [
+            user,
+            loading,
+            login,
+            loginWithOtp,
+            register,
+            logout,
+            updateUser,
+            initializeAuth,
+        ]
     );
 
+    return (
+        <AuthContext.Provider value={value}>
+            {children}
+        </AuthContext.Provider>
+    );
 }
 
 export default AuthProvider;

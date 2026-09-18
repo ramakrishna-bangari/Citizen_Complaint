@@ -22,11 +22,21 @@ export function refreshSession() {
     return refreshPromise;
 }
 
+const isAuthEndpoint = (url = "") => {
+    return (
+        url.includes("/auth/login") ||
+        url.includes("/auth/register") ||
+        url.includes("/auth/refresh") ||
+        url.includes("/auth/otp/") ||
+        url.includes("/auth/forgot-password") ||
+        url.includes("/auth/reset-password")
+    );
+};
+
 api.interceptors.response.use(
     (response) => {
         return response;
     },
-
     async (error) => {
         const originalRequest = error.config;
 
@@ -38,11 +48,7 @@ api.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        if (originalRequest.url?.includes("/auth/refresh")) {
-            window.dispatchEvent(
-                new CustomEvent("auth:session-expired")
-            );
-
+        if (isAuthEndpoint(originalRequest.url)) {
             return Promise.reject(error);
         }
 
@@ -58,13 +64,9 @@ api.interceptors.response.use(
 
         try {
             await refreshSession();
-
             return api(originalRequest);
         } catch (refreshError) {
-            window.dispatchEvent(
-                new CustomEvent("auth:session-expired")
-            );
-
+            window.dispatchEvent(new CustomEvent("auth:session-expired"));
             return Promise.reject(refreshError);
         }
     }

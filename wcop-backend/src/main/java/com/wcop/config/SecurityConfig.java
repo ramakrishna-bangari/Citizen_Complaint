@@ -5,9 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,8 +19,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-
 @Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -28,98 +29,98 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                .csrf(csrf->csrf.disable())
-
-                // STATELESS JWT
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // AUTHORIZATION
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
 
-                        // AUTHENTICATION
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // CITIZEN
-                        // Create complaint
-                        .requestMatchers(HttpMethod.POST, "/api/complaints").hasRole("CITIZEN")
-                        // Citizen's own complaints
-                        .requestMatchers(HttpMethod.GET, "/api/complaints/my").hasRole("CITIZEN")
-                        // Citizen dashboard
-                        .requestMatchers(HttpMethod.GET, "/api/dashboard/citizen").hasRole("CITIZEN")
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Paginated complaints
-                        // ADMIN + OFFICER
-                        .requestMatchers(HttpMethod.GET, "/api/complaints/page").hasAnyRole("ADMIN", "OFFICER")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/complaints")
+                        .hasRole("CITIZEN")
 
-                        // All complaints
-                        // ADMIN + OFFICER
-                        .requestMatchers(HttpMethod.GET, "/api/complaints").hasAnyRole("ADMIN", "OFFICER")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/complaints/my")
+                        .hasRole("CITIZEN")
 
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/dashboard/citizen")
+                        .hasRole("CITIZEN")
 
-                        // Single complaint
-                        // Authenticated users
-                        .requestMatchers(HttpMethod.GET, "/api/complaints/*").authenticated()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/complaints/page")
+                        .hasAnyRole("ADMIN", "OFFICER")
 
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/complaints")
+                        .hasAnyRole("ADMIN", "OFFICER")
 
-                        // Complaint history
-                        .requestMatchers(HttpMethod.GET, "/api/complaints/*/history").authenticated()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/complaints/*")
+                        .authenticated()
 
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/complaints/*/history")
+                        .authenticated()
 
-                        // Update complaint status
-                        .requestMatchers(HttpMethod.PUT, "/api/complaints/*/status").hasAnyRole("ADMIN", "OFFICER")
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/complaints/*/status")
+                        .hasAnyRole("ADMIN", "OFFICER")
 
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/complaints/*/reject")
+                        .hasAnyRole("ADMIN", "OFFICER")
 
-                        // Reject complaint
-                        .requestMatchers(HttpMethod.PUT, "/api/complaints/*/reject").hasAnyRole("ADMIN", "OFFICER")
+                        .requestMatchers("/api/officer/**")
+                        .hasRole("OFFICER")
 
-                        // OFFICER APIs
-                        .requestMatchers("/api/officer/**").hasRole("OFFICER")
+                        .requestMatchers("/api/admin/**")
+                        .hasRole("ADMIN")
 
-
-                        // ADMIN APIs
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                        // USER PROFILE
-
-                        .requestMatchers(HttpMethod.GET, "/api/users/profile").authenticated()
-
-                        .requestMatchers(HttpMethod.PUT, "/api/users/profile").authenticated()
-
-                        .requestMatchers(HttpMethod.PUT, "/api/users/password").authenticated()
-
-                        // EVERYTHING ELSE
                         .anyRequest().authenticated())
-
-                // JWT FILTER
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // React
-        configuration.setAllowedOrigins(List.of("https://citizen-complaints.vercel.app"));
+        configuration.setAllowedOrigins(List.of(
+                "https://citizen-complaints.vercel.app",
+                "http://localhost:5173"));
 
-        // HTTP methods
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "OPTIONS"));
 
-        // Headers
         configuration.setAllowedHeaders(List.of("*"));
 
-        // Expose Authorization header
-        configuration.setExposedHeaders(List.of("Authorization"));
-
-        // Credentials
         configuration.setAllowCredentials(true);
+
+        configuration.setExposedHeaders(List.of(
+                "Set-Cookie"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
@@ -128,21 +129,8 @@ public class SecurityConfig {
         return source;
     }
 
-
-    // PASSWORD ENCODER
-
     @Bean
     public PasswordEncoder passwordEncoder() {
-
         return new BCryptPasswordEncoder();
-    }
-
-
-    // AUTHENTICATION MANAGER
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-
-        return configuration.getAuthenticationManager();
     }
 }
