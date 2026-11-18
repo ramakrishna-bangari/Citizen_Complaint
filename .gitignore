@@ -1,0 +1,7 @@
+.env
+*.env
+Citizen_Complaint .env
+target/
+node_modules/
+dist/
+.idea/
