@@ -22,6 +22,8 @@ function Home() {
 
     const getTargetRoute = () => {
         if (!isAuthenticated) return "/register";
+        if (user?.role === "ADMIN") return "/admin/complaints";
+        if (user?.role === "OFFICER") return "/officer/complaints";
         return "/citizen/complaints/new";
     };
 
@@ -68,7 +70,7 @@ function Home() {
                         <div className="lg:col-span-5">
                             <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3.5 py-1 text-xs font-semibold text-blue-700">
                                 <span className="flex h-2 w-2 rounded-full bg-blue-600" />
-                                Citizen Portal
+                                {user?.role === "ADMIN" ? "Admin Portal" : user?.role === "OFFICER" ? "Officer Portal" : "Citizen Portal"}
                             </div>
 
                             <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-5xl xl:text-6xl leading-[1.08]">
@@ -109,10 +111,10 @@ function Home() {
                                         </Link>
 
                                         <Link
-                                            to="/citizen/complaints/new"
+                                            to={getTargetRoute()}
                                             className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-7 py-3.5 text-base font-bold text-slate-700 transition hover:bg-slate-50 active:scale-[0.99]"
                                         >
-                                            Submit New Complaint
+                                            {user?.role === "ADMIN" ? "Manage Complaints" : user?.role === "OFFICER" ? "View Complaints" : "Submit New Complaint"}
                                         </Link>
                                     </>
                                 )}
